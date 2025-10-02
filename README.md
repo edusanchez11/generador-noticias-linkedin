@@ -7,18 +7,25 @@
   <img src="https://img.shields.io/badge/Status-Active-brightgreen.svg" alt="Status">
 </p>
 
-Una aplicación web desarrollada con Streamlit que utiliza inteligencia artificial para generar contenido atractivo de LinkedIn basado en noticias de actualidad.
+Una aplicación web desarrollada con Streamlit que utiliza inteligencia artificial para generar contenido atractivo de LinkedIn basado en noticias de actualidad. ¡Perfecto para mantener una presencia profesional activa en LinkedIn con solo 5-8 minutos por semana!
 
-## 🎯 **Demo**
+## 🎯 **Demo en Vivo**
 
-![Demo de la aplicación](https://via.placeholder.com/800x400/0077B5/FFFFFF?text=LinkedIn+News+Generator)
+¡Aplicación 100% funcional! Sigue las instrucciones de instalación y tendrás tu generador de contenido LinkedIn ejecutándose en minutos.
 
-> **🔗 Prueba la aplicación:** Clona el repositorio y ejecuta `streamlit run app.py`
+> **🔗 Uso rápido:** Ve a [GUIA_USO_SEMANAL.md](./GUIA_USO_SEMANAL.md) para instrucciones paso a paso
 
 ## 🚀 Características
 
-- **Múltiples fuentes de noticias**: NewsAPI y The Guardian API
-- **Integración con LLMs**: Compatible con OpenAI y Groq
+### 📰 **Fuentes de Noticias Múltiples**
+- **🔍 Google News**: Noticias más actuales y relevantes (104 resultados por búsqueda)
+- **📰 The Guardian API**: Periodismo de alta calidad
+- **📺 BBC RSS**: Noticias internacionales confiables
+- **🌐 NewsAPI**: Amplia cobertura de fuentes globales
+
+### 🤖 **Generación Inteligente con IA**
+- **Groq LLaMA 3.1-8b**: Modelo optimizado y rápido
+- **OpenAI GPT**: Compatible con modelos de OpenAI
 - **Personalización avanzada**: Diferentes estilos, tonos y longitudes de posts
 - **Interfaz intuitiva**: Diseño limpio y fácil de usar
 - **Edición en tiempo real**: Modifica el contenido generado antes de publicar
@@ -167,10 +174,32 @@ Las contribuciones son bienvenidas. Por favor:
 4. Push a la rama
 5. Abre un Pull Request
 
-## 📞 Soporte
+## � **Uso Semanal Recomendado**
+
+### ⚡ **Rutina de 5-8 minutos por semana:**
+
+📋 **Ve a [GUIA_USO_SEMANAL.md](./GUIA_USO_SEMANAL.md)** para instrucciones completas paso a paso.
+
+**Comando rápido para iniciar:**
+```powershell
+cd "ruta/a/tu/proyecto"; .\.venv\Scripts\Activate.ps1; streamlit run app.py
+```
+
+### 🎯 **Temas Sugeridos por Día:**
+- **🟦 Lunes**: Data Science
+- **🟨 Miércoles**: Data Analysis  
+- **🟩 Viernes**: Inteligencia Artificial
+
+¡Con esta rutina tendrás contenido profesional para LinkedIn sin esfuerzo!
+
+---
+
+## �📞 Soporte
 
 Si tienes algún problema o sugerencia, puedes:
-- Abrir un issue en el repositorio
+- 📖 Consultar la [Guía de Uso Semanal](./GUIA_USO_SEMANAL.md)
+- 🐛 Abrir un issue en el repositorio
+- 💬 Contactar al desarrollador
 - Contactar al desarrollador
 
 ## 📄 Licencia
