@@ -1,0 +1,34 @@
+🚀 ¡He creado una aplicación que revoluciona la creación de contenido para LinkedIn!
+
+Presentando mi nuevo proyecto: **Generador de Noticias para LinkedIn** 📰✨
+
+¿Te has quedado sin ideas para tus publicaciones de LinkedIn? ¿Quieres estar siempre al día con las noticias más relevantes de tu sector? Mi aplicación tiene la solución perfecta.
+
+🎯 **¿Qué hace?**
+• Busca las noticias más actuales sobre cualquier tema que te interese
+• Utiliza IA avanzada (Groq LLaMA 3.1) para generar posts profesionales
+• Optimiza automáticamente el contenido para LinkedIn
+• Incluye hashtags relevantes y call-to-actions efectivos
+
+💡 **¿Cómo te beneficia?**
+✅ Ahorra tiempo: De horas a minutos en crear contenido
+✅ Mantente relevante: Siempre con las noticias más actuales
+✅ Aumenta engagement: Posts optimizados para generar interacción
+✅ Personalización completa: 6 estilos × 6 tonos × 3 longitudes
+✅ Completamente gratuito: Código abierto en GitHub
+
+🛠️ **Tecnologías utilizadas:**
+• Streamlit para la interfaz
+• APIs de noticias (The Guardian, BBC)
+• IA generativa con Groq
+• Python y librerías especializadas
+
+🎖️ **Lo mejor de todo:** Es completamente gratuito y de código abierto. Cualquier profesional, emprendedor o empresa puede usar esta herramienta para mejorar su presencia en LinkedIn.
+
+👨‍💻 **¿Eres desarrollador?** El código está disponible en GitHub para que puedas contribuir y mejorarlo.
+
+🚀 **Repositorio:** https://github.com/edusanchez11/generador-noticias-linkedin
+
+¿Qué opinas? ¿Te gustaría probar una herramienta que automatice la creación de contenido manteniendo la calidad y relevancia?
+
+#IA #LinkedIn #Automatización #ContentMarketing #Python #Streamlit #Innovation #TechProject #OpenSource #DigitalTransformation

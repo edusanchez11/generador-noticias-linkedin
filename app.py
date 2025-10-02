@@ -84,6 +84,89 @@ def obtener_noticias_guardian(api_key: str, seccion: str = "world", num_articulo
         return []
 
 @st.cache_data(ttl=3600)
+def obtener_noticias_google(query: str, num_articulos: int = 10, idioma: str = "es") -> List[Dict]:
+    """
+    Obtiene noticias de Google News usando una query personalizada
+    """
+    try:
+        from pygooglenews import GoogleNews
+        
+        # Inicializar Google News
+        gn = GoogleNews(lang=idioma, country='ES' if idioma == 'es' else 'US')
+        
+        # Buscar noticias por query
+        search_result = gn.search(query)
+        
+        articles = []
+        
+        if search_result and 'entries' in search_result:
+            for entry in search_result['entries'][:num_articulos]:
+                # Extraer imagen si existe
+                image_url = ""
+                if hasattr(entry, 'media_content') and entry.media_content:
+                    image_url = entry.media_content[0].get('url', '')
+                elif hasattr(entry, 'links'):
+                    for link in entry.links:
+                        if 'image' in link.get('type', ''):
+                            image_url = link.get('href', '')
+                            break
+                
+                articles.append({
+                    "title": entry.title,
+                    "description": entry.summary if hasattr(entry, 'summary') else entry.title,
+                    "content": (entry.summary if hasattr(entry, 'summary') else entry.title)[:500] + "...",
+                    "url": entry.link,
+                    "publishedAt": entry.published if hasattr(entry, 'published') else "",
+                    "urlToImage": image_url,
+                    "source": entry.source.title if hasattr(entry, 'source') else "Google News"
+                })
+        
+        return articles
+    
+    except Exception as e:
+        st.error(f"Error al obtener noticias de Google: {str(e)}")
+        return []
+
+@st.cache_data(ttl=3600)
+def obtener_noticias_google_trending(num_articulos: int = 10, idioma: str = "es") -> List[Dict]:
+    """
+    Obtiene las noticias trending de Google News
+    """
+    try:
+        from pygooglenews import GoogleNews
+        
+        # Inicializar Google News
+        gn = GoogleNews(lang=idioma, country='ES' if idioma == 'es' else 'US')
+        
+        # Obtener noticias trending
+        trending = gn.top_news()
+        
+        articles = []
+        
+        if trending and 'entries' in trending:
+            for entry in trending['entries'][:num_articulos]:
+                # Extraer imagen si existe
+                image_url = ""
+                if hasattr(entry, 'media_content') and entry.media_content:
+                    image_url = entry.media_content[0].get('url', '')
+                
+                articles.append({
+                    "title": entry.title,
+                    "description": entry.summary if hasattr(entry, 'summary') else entry.title,
+                    "content": (entry.summary if hasattr(entry, 'summary') else entry.title)[:500] + "...",
+                    "url": entry.link,
+                    "publishedAt": entry.published if hasattr(entry, 'published') else "",
+                    "urlToImage": image_url,
+                    "source": entry.source.title if hasattr(entry, 'source') else "Google News"
+                })
+        
+        return articles
+    
+    except Exception as e:
+        st.error(f"Error al obtener trending de Google: {str(e)}")
+        return []
+
+@st.cache_data(ttl=3600)
 def obtener_noticias_rss_bbc(query: str = "", num_articulos: int = 10) -> List[Dict]:
     """
     Obtiene noticias de BBC RSS como alternativa gratuita
@@ -300,24 +383,33 @@ def main():
         
         opciones_fuente = []
         if guardian_available and newsapi_available:
-            opciones_fuente = ["The Guardian", "NewsAPI", "Fuente Gratuita (BBC)", "Ambas"]
+            opciones_fuente = ["Google News", "The Guardian", "NewsAPI", "BBC RSS", "Todas"]
             default_index = 0
         elif guardian_available:
-            opciones_fuente = ["The Guardian", "Fuente Gratuita (BBC)"]
+            opciones_fuente = ["Google News", "The Guardian", "BBC RSS", "Todas las gratuitas"]
             default_index = 0
         elif newsapi_available:
-            opciones_fuente = ["NewsAPI", "Fuente Gratuita (BBC)"]
+            opciones_fuente = ["Google News", "NewsAPI", "BBC RSS", "Todas las gratuitas"]
             default_index = 0
         else:
-            opciones_fuente = ["Fuente Gratuita (BBC)"]
+            opciones_fuente = ["Google News", "BBC RSS"]
             default_index = 0
         
         fuente_noticias = st.selectbox(
             "Selecciona fuente de noticias:",
             opciones_fuente,
             index=default_index,
-            help="Solo aparecen las fuentes con API configurada" if len(opciones_fuente) < 3 else None
+            help="Google News y BBC RSS están siempre disponibles sin API"
         )
+        
+        # Configuración específica para Google News
+        if "Google News" in fuente_noticias:
+            idioma_google = st.selectbox(
+                "Idioma para Google News:",
+                ["es", "en"],
+                format_func=lambda x: "Español" if x == "es" else "English",
+                help="Idioma de las noticias de Google News"
+            )
         
         # Mostrar aviso si la fuente seleccionada no está configurada
         if fuente_noticias == "NewsAPI" and not newsapi_available:
@@ -401,7 +493,8 @@ def main():
         # Estado de las API keys
         st.subheader("📊 Estado de APIs")
         
-        # Fuente gratuita siempre disponible
+        # Fuentes gratuitas siempre disponibles
+        st.success("✅ Google News: Disponible (gratuito, sin API)")
         st.success("✅ BBC RSS: Disponible (gratuito, sin API)")
         
         # Verificar Guardian API
@@ -431,7 +524,7 @@ def main():
         
         # Recomendación basada en configuración
         if (openai_configured or groq_configured):
-            st.success("🎉 ¡Ya puedes generar posts! Usa 'Fuente Gratuita (BBC)' para noticias.")
+            st.success("🎉 ¡Configuración perfecta! Usa Google News para las mejores noticias.")
         else:
             st.warning("⚠️ Configura una API de LLM (Groq recomendado) para generar posts.")
     
@@ -455,7 +548,7 @@ def main():
             buscar_con_prompt = st.button("� Buscar Noticias", type="primary", use_container_width=True)
         
         with col_btn2:
-            obtener_general = st.button("📰 Noticias Generales", use_container_width=True)
+            obtener_trending = st.button("� Trending Google", use_container_width=True)
         
         if buscar_con_prompt and prompt_busqueda.strip():
             st.session_state.modo_busqueda = "personalizada"
@@ -463,29 +556,34 @@ def main():
             noticias = []
             
             with st.spinner("🔍 Buscando noticias relevantes..."):
-                # Intentar Guardian primero
-                if fuente_noticias in ["The Guardian", "Ambas"] and 'guardian_key' in locals() and guardian_key and guardian_key.strip() and guardian_key != "tu_guardian_key_aqui":
+                # Google News (siempre disponible)
+                if fuente_noticias in ["Google News", "Todas", "Todas las gratuitas"]:
+                    st.info("🔍 Buscando en Google News...")
+                    idioma = idioma_google if 'idioma_google' in locals() else 'es'
+                    noticias_google = obtener_noticias_google(prompt_busqueda, 
+                                                            num_articulos//3 if "Todas" in fuente_noticias else num_articulos, 
+                                                            idioma)
+                    noticias.extend(noticias_google)
+                
+                # The Guardian API
+                if fuente_noticias in ["The Guardian", "Todas", "Todas las gratuitas"] and 'guardian_key' in locals() and guardian_key and guardian_key.strip() and guardian_key != "tu_guardian_key_aqui":
                     try:
-                        noticias_guardian = buscar_noticias_guardian_personalizada(guardian_key, prompt_busqueda, num_articulos//2 if fuente_noticias == "Ambas" else num_articulos)
+                        noticias_guardian = buscar_noticias_guardian_personalizada(guardian_key, prompt_busqueda, 
+                                                                                 num_articulos//3 if "Todas" in fuente_noticias else num_articulos)
                         noticias.extend(noticias_guardian)
                     except Exception as e:
-                        st.warning("⚠️ Error con The Guardian API. Usando fuente alternativa...")
-                        # Fallback a RSS
-                        noticias_rss = obtener_noticias_rss_bbc(prompt_busqueda, num_articulos//2 if fuente_noticias == "Ambas" else num_articulos)
-                        noticias.extend(noticias_rss)
+                        st.warning("⚠️ Error con The Guardian API.")
                 
-                # Usar fuente gratuita si se selecciona o como fallback
-                if fuente_noticias == "Fuente Gratuita (BBC)" or (fuente_noticias in ["The Guardian", "Ambas"] and (not 'guardian_key' in locals() or not guardian_key or guardian_key.strip() == "tu_guardian_key_aqui")):
-                    if fuente_noticias == "Fuente Gratuita (BBC)":
-                        st.info("ℹ️ Usando BBC RSS (gratuito, sin API requerida)")
-                    else:
-                        st.info("ℹ️ Usando fuente gratuita alternativa (BBC RSS)")
-                    noticias_rss = obtener_noticias_rss_bbc(prompt_busqueda, num_articulos)
+                # BBC RSS (backup gratuito)
+                if fuente_noticias in ["BBC RSS", "Todas", "Todas las gratuitas"]:
+                    noticias_rss = obtener_noticias_rss_bbc(prompt_busqueda, 
+                                                          num_articulos//3 if "Todas" in fuente_noticias else num_articulos)
                     noticias.extend(noticias_rss)
                 
-                # Buscar en NewsAPI con query personalizada solo si está configurada
-                if fuente_noticias in ["NewsAPI", "Ambas"] and 'newsapi_key' in locals() and newsapi_key and newsapi_key.strip() and newsapi_key != "tu_newsapi_key_aqui":
-                    noticias_newsapi = buscar_noticias_newsapi_personalizada(newsapi_key, prompt_busqueda, num_articulos//2 if fuente_noticias == "Ambas" else num_articulos)
+                # NewsAPI (si está configurada)
+                if fuente_noticias in ["NewsAPI", "Todas"] and 'newsapi_key' in locals() and newsapi_key and newsapi_key.strip() and newsapi_key != "tu_newsapi_key_aqui":
+                    noticias_newsapi = buscar_noticias_newsapi_personalizada(newsapi_key, prompt_busqueda, 
+                                                                           num_articulos//3 if fuente_noticias == "Todas" else num_articulos)
                     noticias.extend(noticias_newsapi)
             
             if noticias:
@@ -504,18 +602,23 @@ def main():
                 else:
                     st.warning(f"⚠️ No se encontraron noticias relevantes sobre '{prompt_busqueda[:30]}...' en {', '.join(apis_disponibles)}. Intenta con otros términos.")
         
-        elif obtener_general:
-            st.session_state.modo_busqueda = "general"
+        elif obtener_trending:
+            st.session_state.modo_busqueda = "trending"
             noticias = []
             
-            with st.spinner("📰 Obteniendo noticias generales..."):
-                # Obtener noticias según la fuente seleccionada
-                if fuente_noticias in ["NewsAPI", "Ambas"] and 'newsapi_key' in locals() and newsapi_key and newsapi_key.strip() and newsapi_key != "tu_newsapi_key_aqui":
-                    noticias_newsapi = obtener_noticias_newsapi(newsapi_key, categoria_news, pais_news, num_articulos//2 if fuente_noticias == "Ambas" else num_articulos)
+            with st.spinner("� Obteniendo noticias trending de Google..."):
+                # Obtener trending de Google News
+                idioma = idioma_google if 'idioma_google' in locals() else 'es'
+                noticias_trending = obtener_noticias_google_trending(num_articulos, idioma)
+                noticias.extend(noticias_trending)
+                
+                # También obtener de otras fuentes si están disponibles
+                if fuente_noticias in ["NewsAPI", "Todas"] and 'newsapi_key' in locals() and newsapi_key and newsapi_key.strip() and newsapi_key != "tu_newsapi_key_aqui":
+                    noticias_newsapi = obtener_noticias_newsapi(newsapi_key, categoria_news, pais_news, num_articulos//3)
                     noticias.extend(noticias_newsapi)
                 
-                if fuente_noticias in ["The Guardian", "Ambas"] and 'guardian_key' in locals() and guardian_key and guardian_key.strip() and guardian_key != "tu_guardian_key_aqui":
-                    noticias_guardian = obtener_noticias_guardian(guardian_key, seccion_guardian, num_articulos//2 if fuente_noticias == "Ambas" else num_articulos)
+                if fuente_noticias in ["The Guardian", "Todas", "Todas las gratuitas"] and 'guardian_key' in locals() and guardian_key and guardian_key.strip() and guardian_key != "tu_guardian_key_aqui":
+                    noticias_guardian = obtener_noticias_guardian(guardian_key, seccion_guardian, num_articulos//3)
                     noticias.extend(noticias_guardian)
             
             if noticias:
@@ -543,6 +646,8 @@ def main():
             # Mostrar el tipo de búsqueda
             if st.session_state.get('modo_busqueda') == "personalizada":
                 st.info(f"🎯 Búsqueda: {st.session_state.get('prompt_busqueda', '')[:50]}...")
+            elif st.session_state.get('modo_busqueda') == "trending":
+                st.info("🔥 Mostrando noticias trending de Google News")
             
             for i, noticia in enumerate(st.session_state.noticias):
                 with st.expander(f"📰 {noticia['title'][:45]}..."):
@@ -750,7 +855,9 @@ def main():
                 - "Innovación en startups"
                 """)
             
-            st.info("👈 ¡Comienza escribiendo tu búsqueda en el panel izquierdo!")
+            st.markdown("---")
+            st.success("🚀 **Nuevo:** Ahora con Google News integrado para las noticias más relevantes y actuales")
+            st.info("👈 ¡Comienza escribiendo tu búsqueda o prueba las noticias trending de Google!")
     
     # Footer
     st.markdown("---")
